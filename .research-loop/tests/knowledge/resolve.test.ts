@@ -668,6 +668,8 @@ test("the public interface exports exactly the entry points of this phase", asyn
       "KnowledgeSiteError",
       "KnowledgeValidationError",
       "buildKnowledgeSite",
+      "compileTree",
+      "extractTreeBlock",
       "loadKnowledge",
       "previewKnowledgeSite",
       "resolveKnowledge",

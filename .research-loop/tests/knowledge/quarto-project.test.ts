@@ -63,6 +63,7 @@ const BASE_CONFIG = [
   "  html:",
   "    toc: true",
   "    css: research-loop.css",
+  "    header-includes: <script type=\"module\" src=\"/knowledge/research-loop-tree.js\"></script>",
   "crossref:",
   "  custom:",
   "    - kind: float",
@@ -220,6 +221,7 @@ test("the projection holds exactly the graph, the bibliography, and generated na
     "ising/proposal.qmd",
     "ising/verified-code.qmd",
     "references/ref.bib",
+    "research-loop-tree.js",
     "research-loop.css",
   ]);
 
@@ -362,7 +364,14 @@ test("the generated configuration re-asserts every fixed safety setting", async 
     "output-dir": "_site",
     render: ["**/*.qmd"],
   });
-  assert.deepEqual(config.format, { html: { toc: true, css: "research-loop.css" } });
+  assert.deepEqual(config.format, {
+    html: {
+      toc: true,
+      css: "research-loop.css",
+      "header-includes":
+        '<script type="module" src="/knowledge/research-loop-tree.js"></script>',
+    },
+  });
   assert.deepEqual(config.crossref, {
     custom: [
       { kind: "float", key: "lem", "reference-prefix": "Lemma", "space-before-numbering": true },
@@ -1014,4 +1023,44 @@ test("a page carrying no shortcode is projected untouched", async (t) => {
   for (const line of body) {
     assert.ok(projected.includes(line), line);
   }
+});
+
+// ---------------------------------------------------------------------------
+// The topic tree runtime.
+// ---------------------------------------------------------------------------
+
+test("the projection emits the topic tree runtime with the compiled data", async (t) => {
+  const repo = await makeRepo(t);
+  const indexFile = path.join(repo, "knowledge", "index.qmd");
+  await writeFile(
+    indexFile,
+    `${await readFile(indexFile, "utf8")}\n\`\`\`qlab-tree\nnodes:\n  - label: Ising\n    note: ising/index.qmd\n\`\`\`\n`,
+  );
+  const { result } = await project(t, repo);
+
+  const runtime = await readFile(
+    path.join(result.projectDir, "research-loop-tree.js"),
+    "utf8",
+  );
+  assert.ok(runtime.includes('"label":"Ising"'), "the compiled node is embedded");
+  assert.ok(runtime.includes('"noteUrl":"/knowledge/ising/index.html"'));
+  assert.ok(!runtime.includes("__QLAB_TREE_DATA__"), "the placeholder is substituted");
+
+  const config = await generatedConfig(result.projectDir);
+  const html = (config.format as { html: Record<string, unknown> }).html;
+  assert.match(
+    String(html["header-includes"]),
+    /<script type="module" src="\/knowledge\/research-loop-tree\.js"><\/script>/,
+  );
+});
+
+test("a tree-less graph still ships the runtime, with null data", async (t) => {
+  const repo = await makeRepo(t);
+  const { result } = await project(t, repo);
+  const runtime = await readFile(
+    path.join(result.projectDir, "research-loop-tree.js"),
+    "utf8",
+  );
+  assert.ok(runtime.includes("const TREE_DATA = null;"));
+  assert.ok(!runtime.includes("__QLAB_TREE_DATA__"));
 });

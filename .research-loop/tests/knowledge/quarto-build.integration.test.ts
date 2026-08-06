@@ -54,6 +54,7 @@ const BASE_CONFIG = [
   "  html:",
   "    toc: true",
   "    css: research-loop.css",
+  "    header-includes: <script type=\"module\" src=\"/knowledge/research-loop-tree.js\"></script>",
   "crossref:",
   "  custom:",
   "    - kind: float",

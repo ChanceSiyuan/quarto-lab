@@ -53,6 +53,7 @@ import { parse, stringify } from "yaml";
 
 import { UNCURATED, comparePosix, curatedOrder, type KnowledgeGraph } from "./graph.js";
 import { INDEX_FILENAME } from "./parser.js";
+import { compileTree, extractTreeBlock } from "./tree.js";
 import {
   KNOWLEDGE_CATEGORIES,
   isPathLikeAlias,
@@ -80,6 +81,9 @@ const BIBLIOGRAPHY_TARGET = "references/ref.bib";
 
 /** The generated stylesheet that makes Quarto read as part of Research Loop. */
 const THEME_CSS_FILENAME = "research-loop.css";
+/** The topic tree runtime, emitted with the compiled block data substituted. */
+const TREE_RUNTIME_FILENAME = "research-loop-tree.js";
+const TREE_DATA_PLACEHOLDER = "/*__QLAB_TREE_DATA__*/ null";
 
 /**
  * Directories the projection writes into. A trusted page may not live under
@@ -89,7 +93,7 @@ const THEME_CSS_FILENAME = "research-loop.css";
 const RESERVED_DIRECTORIES = [CATEGORY_DIRECTORY, "references"] as const;
 
 /** Files the projection writes at the project root. */
-const RESERVED_FILES = [THEME_CSS_FILENAME] as const;
+const RESERVED_FILES = [THEME_CSS_FILENAME, TREE_RUNTIME_FILENAME] as const;
 
 const RESEARCH_LOOP_STYLESHEET = String.raw`:root {
   --rl-ink: #17211d;
@@ -425,6 +429,60 @@ th {
     background: var(--rl-surface);
   }
 }
+
+/* Topic tree: the authored source block hides; the runtime mounts a canvas
+   in its place. */
+pre.qlab-tree,
+pre[class*="qlab-tree"],
+div.sourceCode:has(> pre > code.qlab-tree) {
+  display: none;
+}
+.qlab-tree-canvas {
+  position: relative;
+  height: 520px;
+  margin: 1rem 0 1.5rem;
+  overflow: hidden;
+  border: 1px solid var(--rl-border, #d0d0d6);
+  border-radius: 10px;
+  background: var(--rl-surface, transparent);
+}
+.qlab-tree-svg { width: 100%; height: 100%; cursor: grab; touch-action: none; }
+.qlab-tree-svg:active { cursor: grabbing; }
+.qlab-tree-edge { fill: none; stroke: var(--rl-border, #c5c5cc); stroke-width: 1.5; }
+.qlab-tree-node { cursor: pointer; }
+.qlab-tree-node text { font-size: 13px; fill: currentColor; user-select: none; }
+.qlab-tree-dot { fill: var(--rl-accent, #4a70d9); }
+.qlab-tree-dot.is-bare { fill: transparent; stroke: var(--rl-border, #9a9aa2); stroke-width: 1.5; }
+.qlab-tree-card {
+  position: absolute;
+  z-index: 4;
+  max-width: 260px;
+  padding: 10px 12px;
+  border: 1px solid var(--rl-border, #d0d0d6);
+  border-radius: 8px;
+  background: var(--rl-surface, #fff);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.12);
+  font-size: 13px;
+}
+.qlab-tree-card div { display: flex; flex-direction: column; gap: 2px; margin-top: 6px; }
+.qlab-tree-card a.is-disabled { color: var(--rl-muted, #9a9aa2); pointer-events: none; text-decoration: none; }
+.qlab-tree-tools {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 4;
+  display: flex;
+  gap: 6px;
+}
+.qlab-tree-tools button {
+  padding: 3px 10px;
+  border: 1px solid var(--rl-border, #d0d0d6);
+  border-radius: 7px;
+  background: var(--rl-surface, #fff);
+  font-size: 11.5px;
+  cursor: pointer;
+}
+.qlab-tree-fallback { position: absolute; inset: auto 10px 46px; z-index: 4; width: calc(100% - 20px); font-size: 11px; }
 `;
 
 /**
@@ -444,7 +502,16 @@ const FIXED_BASE_CONFIG = {
     "site-path": "/knowledge/",
     search: true,
   },
-  format: { html: { toc: true, css: THEME_CSS_FILENAME } },
+  format: {
+    html: {
+      toc: true,
+      css: THEME_CSS_FILENAME,
+      // The topic tree runtime is code-owned chrome, injected here rather
+      // than authored in any page (pages may not carry scripts).
+      "header-includes":
+        `<script type="module" src="/knowledge/${TREE_RUNTIME_FILENAME}"></script>`,
+    },
+  },
   crossref: {
     custom: [
       { kind: "float", key: "lem", "reference-prefix": "Lemma", "space-before-numbering": true },
@@ -836,11 +903,14 @@ export async function materializeQuartoProject(input: {
   // make. Reading the bytes once serves both the scan and the copy, so what is
   // scanned is exactly what is written.
   await mkdir(projectDir, { recursive: true });
+  let indexSource = "";
   for (const [id, page] of graph.pages) {
     assertNotReserved(id, "a knowledge page");
     assertSafeAliases(page);
     const bytes = await readFile(page.absolutePath);
-    assertNoShortcode(id, bytes.toString("utf8"));
+    const text = bytes.toString("utf8");
+    assertNoShortcode(id, text);
+    if (id === INDEX_FILENAME) indexSource = text;
     await writeInto(projectDir, id, bytes);
   }
 
@@ -857,6 +927,40 @@ export async function materializeQuartoProject(input: {
   // 4. The code-owned stylesheet that makes the Quarto site share the
   // dashboard skin without letting the content tree control page chrome.
   await writeInto(projectDir, THEME_CSS_FILENAME, RESEARCH_LOOP_STYLESHEET);
+
+  // 4b. The topic tree runtime — always emitted so injection stays
+  // unconditional; without a block the data is null and the module no-ops.
+  // Validation already enforced the block; a diagnostic here means the graph
+  // bypassed it, and the projection refuses rather than publishes.
+  const treeBlock = extractTreeBlock(indexSource);
+  let treePayload = "null";
+  if (treeBlock) {
+    const compiled = compileTree({
+      yamlText: treeBlock.yamlText,
+      startLine: treeBlock.startLine,
+      pages: new Set(graph.pages.keys()),
+      sitePath: FIXED_BASE_CONFIG.website["site-path"],
+    });
+    if (!compiled.tree) {
+      const first = compiled.diagnostics[0];
+      throw new QuartoProjectionError(
+        `the qlab-tree block did not compile: ${first ? `${first.code} — ${first.message}` : "unknown"}`,
+      );
+    }
+    treePayload = JSON.stringify({
+      ...compiled.tree,
+      sitePath: FIXED_BASE_CONFIG.website["site-path"],
+    });
+  }
+  const runtimeSource = await readFile(new URL("./tree-runtime.js", import.meta.url), "utf8");
+  if (!runtimeSource.includes(TREE_DATA_PLACEHOLDER)) {
+    throw new QuartoProjectionError("tree-runtime.js lost its data placeholder");
+  }
+  await writeInto(
+    projectDir,
+    TREE_RUNTIME_FILENAME,
+    runtimeSource.replace(TREE_DATA_PLACEHOLDER, treePayload),
+  );
 
   // 5. The three category views, in curated reading order then POSIX path.
   const order = curatedOrder(graph);
