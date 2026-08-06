@@ -2,6 +2,7 @@ import type { BridgeEvent, NativeBridge, SpawnOptions } from "./native-bridge";
 import { sha256Bytes } from "./hashing";
 import { profilePath, sleep } from "./platform";
 import { knowledgeUrlToQmdPath } from "./editor-tree";
+import { parseZoteroLink, type ZoteroDeepLink } from "./zotero-links";
 import {
   geckoTargetDigest,
   type LocalRepositoryTargetRuntime,
@@ -374,6 +375,12 @@ export interface ResearchLoopSiteViewOptions {
   onBack?(): void;
   /** Opens the workspace on the knowledge page the browser is showing. */
   onOpenDocument?(relativePath: string): void;
+  /**
+   * Handles a sanctioned zotero:// deep link natively. When provided, the
+   * view cancels the navigation and delegates; when cancellation is not
+   * possible the OS protocol handler still catches the link.
+   */
+  onZoteroLink?(link: ZoteroDeepLink): void;
 }
 
 /**
@@ -507,11 +514,33 @@ export class ResearchLoopSiteView {
         ? `Edit ${this.currentPage}`
         : "Open a Knowledge page on the right first";
     };
+    const onZoteroLink = this.options.onZoteroLink;
     const listener = {
       onLocationChange: (_progress: unknown, _request: unknown, location: { spec?: string } | null) => {
         update(location?.spec);
       },
-      onStateChange() {},
+      onStateChange(
+        _progress: unknown,
+        request: { name?: string; cancel?(reason: number): void } | null,
+        stateFlags: number,
+        _status: number,
+      ) {
+        if (!onZoteroLink) return;
+        const STATE_START = 0x1; // nsIWebProgressListener.STATE_START
+        if (!(stateFlags & STATE_START)) return;
+        const spec = request?.name || "";
+        if (!spec.startsWith("zotero:")) return;
+        const link = parseZoteroLink(spec);
+        if (!link) return;
+        try {
+          request?.cancel?.(0x804b0002); // NS_BINDING_ABORTED
+        }
+        catch {
+          // Cancellation may be unavailable in a remote browser; the OS
+          // protocol handler then catches the navigation instead.
+        }
+        onZoteroLink(link);
+      },
       onProgressChange() {},
       onStatusChange() {},
       onSecurityChange() {},
@@ -521,9 +550,18 @@ export class ResearchLoopSiteView {
     };
     this.locationListener = listener;
     try {
-      const flags = (globalThis as {
-        Components?: { interfaces?: { nsIWebProgress?: { NOTIFY_LOCATION?: number } } };
-      }).Components?.interfaces?.nsIWebProgress?.NOTIFY_LOCATION;
+      const webProgress = (globalThis as {
+        Components?: {
+          interfaces?: {
+            nsIWebProgress?: { NOTIFY_LOCATION?: number; NOTIFY_STATE_REQUEST?: number };
+          };
+        };
+      }).Components?.interfaces?.nsIWebProgress;
+      const location = webProgress?.NOTIFY_LOCATION;
+      const state = this.options.onZoteroLink ? webProgress?.NOTIFY_STATE_REQUEST : undefined;
+      const flags = location === undefined
+        ? undefined
+        : state === undefined ? location : location | state;
       this.browser.addProgressListener?.(listener, flags);
     }
     catch { /* fall through to the load listener below */ }

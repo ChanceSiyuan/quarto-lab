@@ -370,3 +370,29 @@ describe("researchLoopBuildProgress", () => {
       .toBe("Build complete; starting the main site…");
   });
 });
+
+  it("cancels zotero: navigations and hands them to the deep-link handler", () => {
+    const browser = document.createElement("browser") as any;
+    let listener: any = null;
+    browser.addProgressListener = vi.fn((value: any) => { listener = value; });
+    (document as any).createXULElement = vi.fn(() => browser);
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const onZoteroLink = vi.fn();
+    const view = new ResearchLoopSiteView(host, { onZoteroLink });
+    view.show();
+
+    expect(listener).not.toBeNull();
+    const cancel = vi.fn();
+    listener.onStateChange(null, { name: "zotero://open-pdf/library/items/AB?page=2", cancel }, 0x1, 0);
+    expect(cancel).toHaveBeenCalled();
+    expect(onZoteroLink).toHaveBeenCalledWith(
+      expect.objectContaining({ action: "open-pdf", key: "AB", page: 2 }),
+    );
+
+    const httpCancel = vi.fn();
+    listener.onStateChange(null, { name: "http://127.0.0.1:4180/", cancel: httpCancel }, 0x1, 0);
+    expect(httpCancel).not.toHaveBeenCalled();
+    expect(onZoteroLink).toHaveBeenCalledOnce();
+    view.destroy();
+  });

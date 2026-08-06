@@ -11,6 +11,7 @@
 import { ResearchLoopSiteView } from "./research-loop-site";
 import type { QLabRepositoryState } from "./qlab-workspace";
 import type { TabContentProvider } from "./workbench-shell";
+import type { ZoteroDeepLink } from "./zotero-links";
 
 export interface SiteTabCallbacks {
   checkSite(): Promise<boolean>;
@@ -20,6 +21,8 @@ export interface SiteTabCallbacks {
   onOpenDocument(relativePath: string): void;
   /** False for chat-only SSH targets: the local main site cannot serve them. */
   supported?(): boolean;
+  /** Handles zotero:// deep links clicked inside the embedded site browser. */
+  onZoteroLink?(link: ZoteroDeepLink): void;
 }
 
 type CardAction = "choose" | "deploy" | null;
@@ -166,6 +169,9 @@ export class SiteTabView implements TabContentProvider {
     if (!this.siteView) {
       this.siteView = new ResearchLoopSiteView(this.host, {
         onOpenDocument: this.callbacks.onOpenDocument,
+        ...(this.callbacks.onZoteroLink
+          ? { onZoteroLink: this.callbacks.onZoteroLink }
+          : {}),
       });
     }
     this.siteView.show();

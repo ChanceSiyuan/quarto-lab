@@ -49,6 +49,7 @@ import {
 import { StandaloneWorkbenchManager } from "./standalone-workbench";
 import { WorkbenchView } from "./workbench-view";
 import { createPdfBrowserViewer, PdfReaderView, type PdfEmbedHandle } from "./pdf-tab";
+import type { ZoteroDeepLink } from "./zotero-links";
 import type { TabDescriptor as WorkbenchTabDescriptor } from "./workbench-layout";
 import type { TabContentProvider as WorkbenchTabProvider } from "./workbench-shell";
 import {
@@ -1937,6 +1938,9 @@ export class ZoteroChatPlugin {
           if (workbench) void this.openQmdDocument(workbench, relativePath, win);
         },
         supported: () => this.activeRepositoryTarget?.capabilities?.mainSiteSupported !== false,
+        onZoteroLink: (link) => {
+          void this.openZoteroDeepLink(link).catch((error) => this.reportError(error));
+        },
       },
       createWorkspace: (workspaceHost) => this.createWorkspaceView(workspaceHost),
       createPdfProvider: (tab) => this.createPdfProvider(tab, win, () => workbench),
@@ -4502,6 +4506,39 @@ export class ZoteroChatPlugin {
       preventJumpback: false,
       ...(openInWindow ? { openInWindow: true } : {}),
     });
+  }
+
+  /**
+   * A knowledge-site zotero:// deep link, handled natively instead of a
+   * round-trip through the OS protocol handler: select links focus the item
+   * or collection; open-pdf links prefer an open workbench PDF tab, then the
+   * native reader.
+   */
+  private async openZoteroDeepLink(link: ZoteroDeepLink): Promise<void> {
+    const libraryID = link.library.kind === "user"
+      ? Zotero.Libraries?.userLibraryID
+      : Zotero.Groups?.getLibraryIDFromGroupID?.(link.library.groupID);
+    if (libraryID === undefined || libraryID === null) {
+      throw new Error("The Zotero library for this link is unavailable");
+    }
+    if (link.objectKind === "collections") {
+      const collection = Zotero.Collections?.getByLibraryAndKey?.(libraryID, link.key);
+      if (!collection) throw new Error("The linked Zotero collection was not found");
+      await Zotero.getMainWindow()?.ZoteroPane?.collectionsView?.selectCollection?.(collection.id);
+      return;
+    }
+    const item = Zotero.Items?.getByLibraryAndKey?.(libraryID, link.key);
+    if (!item) throw new Error("The linked Zotero item was not found");
+    if (link.action === "select") {
+      await Zotero.getMainWindow()?.ZoteroPane?.selectItem?.(item.id);
+      return;
+    }
+    if (link.page && this.focusWorkbenchPdfTab(item, link.page)) return;
+    await Zotero.Reader.open(
+      item.id,
+      link.page ? { pageIndex: link.page - 1 } : undefined,
+      { allowDuplicate: false, openInBackground: false, preventJumpback: false },
+    );
   }
 
   /**
