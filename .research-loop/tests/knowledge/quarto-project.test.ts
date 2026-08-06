@@ -363,6 +363,7 @@ test("the generated configuration re-asserts every fixed safety setting", async 
     type: "website",
     "output-dir": "_site",
     render: ["**/*.qmd"],
+    resources: ["research-loop-tree.js"],
   });
   assert.deepEqual(config.format, {
     html: {
@@ -388,13 +389,20 @@ test("the generated configuration re-asserts every fixed safety setting", async 
 
   // The whole point of regenerating rather than copying: none of the keys that
   // turn rendering into code execution or into file disclosure may be present.
+  // `resources` is the one argued exception — it must name exactly the
+  // code-owned tree runtime and nothing else (asserted on `config.project`
+  // above); any other resource entry, glob, or a second mention fails here.
   const serialized = await readFile(path.join(result.projectDir, "_quarto.yml"), "utf8");
+  assert.equal(
+    serialized.split("resources").length - 1,
+    1,
+    "resources may appear exactly once, as the fixed runtime entry",
+  );
   for (const forbidden of [
     "filters",
     "include-in-header",
     "include-before-body",
     "include-after-body",
-    "resources",
     "extensions",
     "pre-render",
     "post-render",

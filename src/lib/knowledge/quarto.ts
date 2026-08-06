@@ -983,6 +983,10 @@ export async function materializeQuartoProject(input: {
           type: FIXED_BASE_CONFIG.project.type,
           "output-dir": OUTPUT_DIRECTORY,
           render: [input.renderOnly ?? RENDER_ALL_QMDS],
+          // Quarto copies a root-level .js into the output only when it is a
+          // declared resource. Fixed filename, generation-only key — the
+          // committed base file still may not name resources at all.
+          resources: [TREE_RUNTIME_FILENAME],
         },
         website: { ...FIXED_BASE_CONFIG.website, sidebar: { contents: sidebarContents(graph) } },
         format: FIXED_BASE_CONFIG.format,
